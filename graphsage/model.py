@@ -23,16 +23,13 @@ EMBED_DIM = 128
 NUM_NODES_CORA = 2708
 # number of features in the cora embeddings
 NUM_FEATS_CORA = 1433
-
 NUM_SAMPLES_CORA_LAYER1 = 5
 NUM_SAMPLES_CORA_LAYER2 = 5
-
 
 # number of nodes in the pubmed data
 NUM_NODES_PUBMED = 19717
 # number of features in pubmed embeddings
 NUM_FEATS_PUBMED = 500
-
 NUM_SAMPLES_PUBMED_LAYER1 = 10
 NUM_SAMPLES_PUBMED_LAYER2 = 25
 
