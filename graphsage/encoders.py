@@ -9,13 +9,10 @@ class Encoder(nn.Module):
     Encodes a node's using 'convolutional' GraphSage approach
     """
 
-    def __init__(self, features, feature_dim,
-                 embed_dim, adj_lists, aggregator,
-                 num_sample=10,
-                 base_model=None, gcn=False, cuda=False,
-                 feature_transform=False):
-        super(Encoder, self).__init__()
+    def __init__(self, features, feature_dim, embed_dim, adj_lists, aggregator,
+                 num_sample=10, base_model=None, gcn=False, cuda=False, feature_transform=False):
 
+        super(Encoder, self).__init__()
         self.features = features
         self.feat_dim = feature_dim
         self.adj_lists = adj_lists

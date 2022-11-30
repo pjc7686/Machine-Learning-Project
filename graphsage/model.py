@@ -16,14 +16,25 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # seed
 RANDOM_SEED = 1
-# number of nodes in the cora graph
+# embedding dimension
+EMBED_DIM = 128
+
+# number of nodes in the cora data
 NUM_NODES_CORA = 2708
-# number of nodes in the cora graph
+# number of features in the cora embeddings
 NUM_FEATS_CORA = 1433
-# number of nodes in the cora graph
+
+NUM_SAMPLES_CORA_LAYER1 = 5
+NUM_SAMPLES_CORA_LAYER2 = 5
+
+
+# number of nodes in the pubmed data
 NUM_NODES_PUBMED = 19717
-# number of nodes in the cora graph
+# number of features in pubmed embeddings
 NUM_FEATS_PUBMED = 500
+
+NUM_SAMPLES_PUBMED_LAYER1 = 10
+NUM_SAMPLES_PUBMED_LAYER2 = 25
 
 """
 Simple supervised GraphSAGE model as well as examples running the model
@@ -32,7 +43,6 @@ on the Cora and Pubmed datasets.
 
 
 class SupervisedGraphSage(nn.Module):
-
     def __init__(self, num_classes, enc):
         super(SupervisedGraphSage, self).__init__()
         self.enc = enc
@@ -75,25 +85,16 @@ def load_cora():
     return feat_data, labels, adj_lists
 
 
-def init_seeds():
-    np.random.seed(RANDOM_SEED)
-    random.seed(RANDOM_SEED)
-
-
 def run_cora():
-
     feat_data, labels, adj_lists = load_cora()
     features = nn.Embedding(NUM_NODES_CORA, NUM_FEATS_CORA)
     features.weight = nn.Parameter(torch.FloatTensor(feat_data), requires_grad=False)
     # features.cuda()
 
     agg1 = MeanAggregator(features, cuda=True)
-    enc1 = Encoder(features, NUM_FEATS_CORA, 128, adj_lists, agg1, gcn=True, cuda=False)
+    enc1 = Encoder(features, NUM_FEATS_CORA, EMBED_DIM, adj_lists, agg1, NUM_SAMPLES_CORA_LAYER1, gcn=True, cuda=False)
     agg2 = MeanAggregator(lambda nodes: enc1(nodes).t(), cuda=False)
-    enc2 = Encoder(lambda nodes: enc1(nodes).t(), enc1.embed_dim, 128, adj_lists, agg2,
-                   base_model=enc1, gcn=True, cuda=False)
-    enc1.num_samples = 5
-    enc2.num_samples = 5
+    enc2 = Encoder(lambda nodes: enc1(nodes).t(), enc1.embed_dim, EMBED_DIM, adj_lists, agg2, NUM_SAMPLES_CORA_LAYER2, base_model=enc1, gcn=True, cuda=False)
 
     graphsage = SupervisedGraphSage(7, enc2)
     # graphsage.cuda()
@@ -126,6 +127,7 @@ def run_cora():
     print("Test Time: ", end_output - start_output)
     print("Average batch time:", np.mean(times))
 
+
 def load_pubmed():
     feat_data = np.zeros((NUM_NODES_PUBMED, NUM_FEATS_PUBMED))
     labels = np.empty((NUM_NODES_PUBMED, 1), dtype=np.int64)
@@ -152,6 +154,7 @@ def load_pubmed():
             adj_lists[paper2].add(paper1)
     return feat_data, labels, adj_lists
 
+
 def run_pubmed():
     feat_data, labels, adj_lists = load_pubmed()
     features = nn.Embedding(NUM_NODES_PUBMED, NUM_FEATS_PUBMED)
@@ -159,12 +162,10 @@ def run_pubmed():
     # features.cuda()
 
     agg1 = MeanAggregator(features, cuda=True)
-    enc1 = Encoder(features, 500, 128, adj_lists, agg1, gcn=True, cuda=False)
+    enc1 = Encoder(features, NUM_FEATS_PUBMED, EMBED_DIM, adj_lists, agg1, NUM_SAMPLES_PUBMED_LAYER1, gcn=True, cuda=False)
     agg2 = MeanAggregator(lambda nodes : enc1(nodes).t(), cuda=False)
-    enc2 = Encoder(lambda nodes : enc1(nodes).t(), enc1.embed_dim, 128, adj_lists, agg2,
+    enc2 = Encoder(lambda nodes : enc1(nodes).t(), enc1.embed_dim, EMBED_DIM, adj_lists, agg2, NUM_SAMPLES_PUBMED_LAYER2,
                    base_model=enc1, gcn=True, cuda=False)
-    enc1.num_samples = 10
-    enc2.num_samples = 25
 
     graphsage = SupervisedGraphSage(3, enc2)
     # graphsage.cuda()
@@ -180,23 +181,26 @@ def run_pubmed():
         random.shuffle(train)
         start_time = time.time()
         optimizer.zero_grad()
-        loss = graphsage.loss(batch_nodes,
-                              Variable(torch.LongTensor(labels[np.array(batch_nodes)])))
+        loss = graphsage.loss(batch_nodes, Variable(torch.LongTensor(labels[np.array(batch_nodes)])))
         loss.backward()
         optimizer.step()
         end_time = time.time()
         times.append(end_time-start_time)
-        #print(batch, loss.data[0])
 
     val_output = graphsage.forward(val)
     print("Validation F1:", f1_score(labels[val], val_output.data.numpy().argmax(axis=1), average="micro"))
     print("Average batch time:", np.mean(times))
 
 
+def init_seeds():
+    np.random.seed(RANDOM_SEED)
+    random.seed(RANDOM_SEED)
+
+
 def main():
     init_seeds()
-    #run_cora()
-    run_pubmed()
+    run_cora()
+    #run_pubmed()
 
 
 if __name__ == "__main__":
