@@ -11,6 +11,7 @@ from collections import defaultdict
 
 from graphsage.encoders import Encoder
 from graphsage.aggregators import MeanAggregator
+from graphsage.aggregators import RandomAggregator
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -88,9 +89,9 @@ def run_cora():
     features.weight = nn.Parameter(torch.FloatTensor(feat_data), requires_grad=False)
     # features.cuda()
 
-    agg1 = MeanAggregator(features, cuda=True)
+    agg1 = RandomAggregator(features, cuda=True)
     enc1 = Encoder(features, NUM_FEATS_CORA, EMBED_DIM, adj_lists, agg1, NUM_SAMPLES_CORA_LAYER1, gcn=True, cuda=False)
-    agg2 = MeanAggregator(lambda nodes: enc1(nodes).t(), cuda=False)
+    agg2 = RandomAggregator(lambda nodes: enc1(nodes).t(), cuda=False)
     enc2 = Encoder(lambda nodes: enc1(nodes).t(), enc1.embed_dim, EMBED_DIM, adj_lists, agg2, NUM_SAMPLES_CORA_LAYER2, base_model=enc1, gcn=True, cuda=False)
 
     graphsage = SupervisedGraphSage(7, enc2)
