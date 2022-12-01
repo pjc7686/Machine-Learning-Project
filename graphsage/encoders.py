@@ -42,8 +42,8 @@ class Encoder(nn.Module):
                 self_feats = self.features(torch.LongTensor(nodes).cuda())
             else:
                 self_feats = self.features(torch.LongTensor(nodes))
-            combined = torch.cat([self_feats, neigh_feats], dim=1)
+            combined = torch.cat([self_feats, neigh_feats], dim=1) # concat aggregated embedding with original feature
         else:
             combined = neigh_feats
-        combined = F.relu(self.weight.mm(combined.t()))
+        combined = F.relu(self.weight.mm(combined.t())) # neural network stuff
         return combined
