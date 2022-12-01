@@ -42,10 +42,10 @@ class RandomAggregator(nn.Module):
         if self.gcn:
             samp_neighs = [samp_neigh + {[nodes[i]]} for i, samp_neigh in enumerate(samp_neighs)]
 
+
         for i, samp in enumerate(samp_neighs):
             samp = list(samp)
             samp_neighs[i] = samp[random.randrange(len(samp))]
-
         embed_matrix = self.features(torch.LongTensor(samp_neighs))
 
         to_feats = embed_matrix # we need to_feats to be 635 (for each input node) by 1433 (for each feature)

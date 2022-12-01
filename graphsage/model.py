@@ -19,6 +19,11 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 RANDOM_SEED = 1
 # embedding dimension
 EMBED_DIM = 128
+# epsilon
+EPSILON = 0.20
+# batches
+BATCHES = 500
+
 
 # number of nodes in the cora data
 NUM_NODES_CORA = 2708
@@ -89,9 +94,9 @@ def run_cora():
     features.weight = nn.Parameter(torch.FloatTensor(feat_data), requires_grad=False)
     # features.cuda()
 
-    agg1 = RandomAggregator(features, cuda=True)
+    agg1 = MeanAggregator(features, cuda=True)
     enc1 = Encoder(features, NUM_FEATS_CORA, EMBED_DIM, adj_lists, agg1, NUM_SAMPLES_CORA_LAYER1, gcn=True, cuda=False)
-    agg2 = RandomAggregator(lambda nodes: enc1(nodes).t(), cuda=False)
+    agg2 = MeanAggregator(lambda nodes: enc1(nodes).t(), cuda=False)
     enc2 = Encoder(lambda nodes: enc1(nodes).t(), enc1.embed_dim, EMBED_DIM, adj_lists, agg2, NUM_SAMPLES_CORA_LAYER2, base_model=enc1, gcn=True, cuda=False)
 
     graphsage = SupervisedGraphSage(7, enc2)
@@ -106,10 +111,14 @@ def run_cora():
     optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, graphsage.parameters()), lr=0.7)
     times = []
 
-    for batch in range(100):
+    for batch in range(BATCHES):
         batch_nodes = train[:256]
         random.shuffle(train)
         start_time = time.time()
+
+        # RANDOM AGGREGATOR
+        chooseAggregator(enc1, enc2, features)
+
         optimizer.zero_grad()
         loss = graphsage.loss(batch_nodes, Variable(torch.LongTensor(labels[np.array(batch_nodes)])))
         loss.backward()
@@ -188,6 +197,22 @@ def run_pubmed():
     val_output = graphsage.forward(val)
     print("Validation F1:", f1_score(labels[val], val_output.data.numpy().argmax(axis=1), average="micro"))
     print("Average batch time:", np.mean(times))
+
+
+def chooseAggregator(encoder1, encoder2, features):
+    if random.random() < EPSILON:
+        encoder1.aggregator = RandomAggregator(features, cuda=False)
+        print("Encoder 1: Random")
+    else:
+        encoder1.aggregator = MeanAggregator(features, cuda=False)
+        print("Encoder 1: Mean")
+
+    if random.random() < EPSILON:
+        encoder2.aggregator = RandomAggregator(lambda nodes: encoder1(nodes).t(), cuda=False)
+        print("Encoder 2: Random")
+    else:
+        encoder2.aggregator = MeanAggregator(lambda nodes: encoder1(nodes).t(), cuda=False)
+        print("Encoder 2: Mean")
 
 
 def init_seeds():
