@@ -7,6 +7,57 @@ import random
 """
 Set of modules for aggregating embeddings of neighbors.
 """
+
+
+class MaxAggregator(nn.Module):
+    """
+    Aggregates a node's embeddings using mean of neighbors' embeddings
+    """
+    def __init__(self, features, cuda=False, gcn=False):
+        """
+        Initializes the aggregator for a specific graph.
+
+        features -- function mapping LongTensor of node ids to FloatTensor of feature values.
+        cuda -- whether to use GPU
+        gcn --- whether to perform concatenation GraphSAGE-style, or add self-loops GCN-style
+        """
+
+        super(MaxAggregator, self).__init__()
+        self.features = features
+        self.cuda = cuda
+        self.gcn = gcn
+
+    def forward(self, nodes, to_neighs, num_sample=10):
+        """
+        nodes --- list of nodes in a batch
+        to_neighs --- list of sets, each set is the set of neighbors for node in batch
+        num_sample --- number of neighbors to sample. No sampling if None.
+        """
+        # Local pointers to functions (speed hack)
+        _set = set
+        _list = list
+        if num_sample is not None:
+            _sample = random.sample
+            samp_neighs = [_list(_sample(to_neigh, num_sample,)) if len(to_neigh) >= num_sample else to_neigh for to_neigh in to_neighs]
+        else:
+            samp_neighs = to_neighs
+
+        if self.gcn:
+            samp_neighs = [samp_neigh + {[nodes[i]]} for i, samp_neigh in enumerate(samp_neighs)]
+
+        num_features = len(self.features(0))
+        embed_matrix = Variable(torch.zeros(len(samp_neighs), num_features))
+        for i, nbrs in enumerate(samp_neighs):
+            nbrs = list(nbrs)
+            samp_neighs[i] = nbrs[random.randrange(len(nbrs))]
+            embeds = self.features(torch.LongTensor(nbrs))
+            max_feature = torch.max(embeds)
+            embed_matrix[i] = max_feature
+
+        to_feats = embed_matrix # we need to_feats to be 635 (for each input node) by 1433 (for each feature)
+        return to_feats
+
+
 class RandomAggregator(nn.Module):
     """
     Aggregates a node's embeddings using mean of neighbors' embeddings

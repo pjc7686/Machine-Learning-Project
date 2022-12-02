@@ -11,6 +11,7 @@ from collections import defaultdict
 
 from graphsage.encoders import Encoder
 from graphsage.aggregators import MeanAggregator
+from graphsage.aggregators import MaxAggregator
 from graphsage.aggregators import RandomAggregator
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -23,7 +24,6 @@ EMBED_DIM = 128
 EPSILON = 0.20
 # batches
 BATCHES = 500
-
 
 # number of nodes in the cora data
 NUM_NODES_CORA = 2708
