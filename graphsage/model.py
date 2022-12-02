@@ -21,9 +21,9 @@ RANDOM_SEED = 1
 # embedding dimension
 EMBED_DIM = 128
 # epsilon
-EPSILON = 0.20
+EPSILON = 0
 # batches
-BATCHES = 500
+BATCHES = 100
 
 # number of nodes in the cora data
 NUM_NODES_CORA = 2708
@@ -201,14 +201,14 @@ def run_pubmed():
 
 def chooseAggregator(encoder1, encoder2, features):
     if random.random() < EPSILON:
-        encoder1.aggregator = RandomAggregator(features, cuda=False)
+        encoder1.aggregator = MaxAggregator(features, cuda=False)
         print("Encoder 1: Random")
     else:
         encoder1.aggregator = MeanAggregator(features, cuda=False)
         print("Encoder 1: Mean")
 
     if random.random() < EPSILON:
-        encoder2.aggregator = RandomAggregator(lambda nodes: encoder1(nodes).t(), cuda=False)
+        encoder2.aggregator = MaxAggregator(lambda nodes: encoder1(nodes).t(), cuda=False)
         print("Encoder 2: Random")
     else:
         encoder2.aggregator = MeanAggregator(lambda nodes: encoder1(nodes).t(), cuda=False)

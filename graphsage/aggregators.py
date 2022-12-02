@@ -3,6 +3,8 @@ import torch.nn as nn
 from torch.autograd import Variable
 
 import random
+# seed
+RANDOM_SEED = 1
 
 """
 Set of modules for aggregating embeddings of neighbors.
@@ -26,6 +28,7 @@ class MaxAggregator(nn.Module):
         self.features = features
         self.cuda = cuda
         self.gcn = gcn
+        init_seeds()
 
     def forward(self, nodes, to_neighs, num_sample=10):
         """
@@ -48,8 +51,6 @@ class MaxAggregator(nn.Module):
         num_features = len(self.features(0))
         embed_matrix = Variable(torch.zeros(len(samp_neighs), num_features))
         for i, nbrs in enumerate(samp_neighs):
-            nbrs = list(nbrs)
-            samp_neighs[i] = nbrs[random.randrange(len(nbrs))]
             embeds = self.features(torch.LongTensor(nbrs))
             max_feature = torch.max(embeds)
             embed_matrix[i] = max_feature
@@ -75,6 +76,7 @@ class RandomAggregator(nn.Module):
         self.features = features
         self.cuda = cuda
         self.gcn = gcn
+        init_seeds()
 
     def forward(self, nodes, to_neighs, num_sample=10):
         """
@@ -120,6 +122,7 @@ class MeanAggregator(nn.Module):
         self.features = features
         self.cuda = cuda
         self.gcn = gcn
+        random.seed(RANDOM_SEED)
         
     def forward(self, nodes, to_neighs, num_sample=10):
         """
