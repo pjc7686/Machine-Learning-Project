@@ -21,7 +21,7 @@ RANDOM_SEED = 1
 # embedding dimension
 EMBED_DIM = 128
 # epsilon
-EPSILON = 0
+EPSILON = 1
 # batches
 BATCHES = 100
 
@@ -202,14 +202,14 @@ def run_pubmed():
 def chooseAggregator(encoder1, encoder2, features):
     if random.random() < EPSILON:
         encoder1.aggregator = MaxAggregator(features, cuda=False)
-        print("Encoder 1: Random")
+        print("Encoder 1: Alt")
     else:
         encoder1.aggregator = MeanAggregator(features, cuda=False)
         print("Encoder 1: Mean")
 
     if random.random() < EPSILON:
         encoder2.aggregator = MaxAggregator(lambda nodes: encoder1(nodes).t(), cuda=False)
-        print("Encoder 2: Random")
+        print("Encoder 2: Alt")
     else:
         encoder2.aggregator = MeanAggregator(lambda nodes: encoder1(nodes).t(), cuda=False)
         print("Encoder 2: Mean")
