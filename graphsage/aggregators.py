@@ -52,6 +52,7 @@ class MaxAggregator(nn.Module):
         list0 = list(samp_neighs[0])
         num_features = len(self.features(torch.LongTensor(list0))[0])
         embed_matrix = Variable(torch.zeros(len(samp_neighs), num_features))
+
         for i, nbrs in enumerate(samp_neighs):
             nbrs = list(nbrs)
             embeds = self.features(torch.LongTensor(nbrs))
