@@ -17,27 +17,20 @@ from graphsage.aggregators import RandomAggregator
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # seed
-RANDOM_SEED = 1
+RANDOM_SEED = 1 #G7
 # embedding dimension
-EMBED_DIM = 128
+EMBED_DIM = 128 #G7
 # epsilon
-EPSILON = 1
+EPSILON = 0.1 #G7
 # batches
-BATCHES = 100
+BATCHES = 500 #G7
 
 # number of nodes in the cora data
-NUM_NODES_CORA = 2708
+NUM_NODES_CORA = 2708 #G7
 # number of features in the cora embeddings
-NUM_FEATS_CORA = 1433
-NUM_SAMPLES_CORA_LAYER1 = 5
-NUM_SAMPLES_CORA_LAYER2 = 5
-
-# number of nodes in the pubmed data
-NUM_NODES_PUBMED = 19717
-# number of features in pubmed embeddings
-NUM_FEATS_PUBMED = 500
-NUM_SAMPLES_PUBMED_LAYER1 = 10
-NUM_SAMPLES_PUBMED_LAYER2 = 25
+NUM_FEATS_CORA = 1433 #G7
+NUM_SAMPLES_CORA_LAYER1 = 5 #G7
+NUM_SAMPLES_CORA_LAYER2 = 5 #G7
 
 """
 Simple supervised GraphSAGE model as well as examples running the model
@@ -94,9 +87,9 @@ def run_cora():
     features.weight = nn.Parameter(torch.FloatTensor(feat_data), requires_grad=False)
     # features.cuda()
 
-    agg1 = MeanAggregator(features, cuda=True)
+    agg1 = MeanAggregator(features, cuda=True)  #G7
     enc1 = Encoder(features, NUM_FEATS_CORA, EMBED_DIM, adj_lists, agg1, NUM_SAMPLES_CORA_LAYER1, gcn=True, cuda=False)
-    agg2 = MeanAggregator(lambda nodes: enc1(nodes).t(), cuda=False)
+    agg2 = MaxAggregator(lambda nodes: enc1(nodes).t(), cuda=False) #G7
     enc2 = Encoder(lambda nodes: enc1(nodes).t(), enc1.embed_dim, EMBED_DIM, adj_lists, agg2, NUM_SAMPLES_CORA_LAYER2, base_model=enc1, gcn=True, cuda=False)
 
     graphsage = SupervisedGraphSage(7, enc2)
@@ -116,8 +109,8 @@ def run_cora():
         random.shuffle(train)
         start_time = time.time()
 
-        # RANDOM AGGREGATOR
-        chooseAggregator(enc1, enc2, features)
+        # RANDOM AGGREGATOR #G7
+        #chooseAggregator(enc1, enc2, features)
 
         optimizer.zero_grad()
         loss = graphsage.loss(batch_nodes, Variable(torch.LongTensor(labels[np.array(batch_nodes)])))
@@ -133,6 +126,14 @@ def run_cora():
     print("Validation F1:", f1_score(labels[val], val_output.data.numpy().argmax(axis=1), average="micro"))
     print("Test Time: ", end_output - start_output)
     print("Average batch time:", np.mean(times))
+
+
+# number of nodes in the pubmed data
+NUM_NODES_PUBMED = 19717 #G7
+# number of features in pubmed embeddings
+NUM_FEATS_PUBMED = 500 #G7
+NUM_SAMPLES_PUBMED_LAYER1 = 10 #G7
+NUM_SAMPLES_PUBMED_LAYER2 = 25 #G7
 
 
 def load_pubmed():
@@ -199,6 +200,7 @@ def run_pubmed():
     print("Average batch time:", np.mean(times))
 
 
+#G7
 def chooseAggregator(encoder1, encoder2, features):
     if random.random() < EPSILON:
         encoder1.aggregator = MaxAggregator(features, cuda=False)
