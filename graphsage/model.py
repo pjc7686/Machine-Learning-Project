@@ -102,12 +102,9 @@ def run_cora():
     times = []
     rand_indices = np.random.permutation(NUM_NODES_CORA)
     test = rand_indices[:1000]
+    train = list(rand_indices[2000:])
 
     for epoch in range(EPOCHS):  # G7
-
-        rand_indices = np.random.permutation(NUM_NODES_CORA)
-        train = list(rand_indices[2000:])
-
         for batch in range(BATCHES):
             batch_nodes = train[:256]
             random.shuffle(train)
