@@ -3,6 +3,9 @@ import torch.nn as nn
 from torch.nn import init
 import torch.nn.functional as F
 
+import warnings
+warnings.filterwarnings("ignore", message="nn.init.xavier_uniform is now deprecated")
+
 
 class Encoder(nn.Module):
     """
