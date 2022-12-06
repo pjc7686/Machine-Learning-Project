@@ -23,7 +23,7 @@ EMBED_DIM = 128  # G7
 # epsilon
 EPSILON = 0.1  # G7
 # batches
-BATCHES = 200  # G7
+BATCHES = 100  # G7
 # epochs
 EPOCHS = 10  # G7
 # learning rate
@@ -101,8 +101,8 @@ def run_cora():
 
     times = []
     rand_indices = np.random.permutation(NUM_NODES_CORA)
-    test = rand_indices[:1000]
-    train = list(rand_indices[2000:])
+    test = rand_indices[0:1000]
+    train = rand_indices[1000:]
 
     for epoch in range(EPOCHS):  # G7
         for batch in range(BATCHES):
