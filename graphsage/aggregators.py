@@ -13,7 +13,7 @@ Set of modules for aggregating embeddings of neighbors.
 """
 
 
-#G7
+# G7
 class MaxAggregator(nn.Module):
     """
     Aggregates a node's embeddings using mean of neighbors' embeddings
@@ -64,7 +64,7 @@ class MaxAggregator(nn.Module):
         return to_feats
 
 
-#G7
+# G7
 class RandomAggregator(nn.Module):
     """
     Aggregates a node's embeddings using mean of neighbors' embeddings

@@ -17,15 +17,18 @@ from graphsage.aggregators import RandomAggregator
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # seed
-RANDOM_SEED = 1 #G7
+RANDOM_SEED = 1 # G7
 # embedding dimension
-EMBED_DIM = 128 #G7
+EMBED_DIM = 128 # G7
 # epsilon
-EPSILON = 0.1 #G7
+EPSILON = 0.1 # G7
 # batches
 BATCHES = 1000 #G7
 # Epochs
 EPOCHS = 1000
+BATCHES = 200 # G7
+# learning rate
+LRATE = .7  # G7
 
 # number of nodes in the cora data
 NUM_NODES_CORA = 2708 # G7
@@ -89,9 +92,9 @@ def run_cora():
     features.weight = nn.Parameter(torch.FloatTensor(feat_data), requires_grad=False)
     # features.cuda()
 
-    agg1 = MeanAggregator(features, cuda=True)  #G7
+    agg1 = MeanAggregator(features, cuda=True)  # G7
     enc1 = Encoder(features, NUM_FEATS_CORA, EMBED_DIM, adj_lists, agg1, NUM_SAMPLES_CORA_LAYER1, gcn=True, cuda=False)
-    agg2 = MaxAggregator(lambda nodes: enc1(nodes).t(), cuda=False) #G7
+    agg2 = MaxAggregator(lambda nodes: enc1(nodes).t(), cuda=False) # G7
     enc2 = Encoder(lambda nodes: enc1(nodes).t(), enc1.embed_dim, EMBED_DIM, adj_lists, agg2, NUM_SAMPLES_CORA_LAYER2, base_model=enc1, gcn=True, cuda=False)
 
     graphsage = SupervisedGraphSage(7, enc2)
@@ -132,15 +135,14 @@ def run_cora():
         #     end_time = time.time()
         #     times.append(end_time - start_time)
 
-        ############# /G7
+    ############# /G7
 
     rand_indices = np.random.permutation(NUM_NODES_CORA)
     test = rand_indices[:1000]
     val = rand_indices[1000:1500]
     train = list(rand_indices[1500:])
 
-    optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, graphsage.parameters()), lr=0.7)
-
+    optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, graphsage.parameters()), lr=LRATE)
     times = []
 
     for batch in range(BATCHES):
@@ -168,11 +170,11 @@ def run_cora():
 
 
 # number of nodes in the pubmed data
-NUM_NODES_PUBMED = 19717 #G7
+NUM_NODES_PUBMED = 19717  # G7
 # number of features in pubmed embeddings
-NUM_FEATS_PUBMED = 500 #G7
-NUM_SAMPLES_PUBMED_LAYER1 = 10 #G7
-NUM_SAMPLES_PUBMED_LAYER2 = 25 #G7
+NUM_FEATS_PUBMED = 500  # G7
+NUM_SAMPLES_PUBMED_LAYER1 = 10  # G7
+NUM_SAMPLES_PUBMED_LAYER2 = 25  # G7
 
 
 def load_pubmed():
@@ -221,7 +223,7 @@ def run_pubmed():
     val = rand_indices[1000:1500]
     train = list(rand_indices[1500:])
 
-    optimizer = torch.optim.SGD(filter(lambda p : p.requires_grad, graphsage.parameters()), lr=0.7)
+    optimizer = torch.optim.SGD(filter(lambda p : p.requires_grad, graphsage.parameters()), lr=LRATE)
     times = []
 
     for batch in range(200):
@@ -240,7 +242,7 @@ def run_pubmed():
     print("Average batch time:", np.mean(times))
 
 
-#G7
+# G7
 def chooseAggregator(encoder1, encoder2, features):
     if random.random() < EPSILON:
         encoder1.aggregator = MaxAggregator(features, cuda=False)
