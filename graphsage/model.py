@@ -17,7 +17,7 @@ from graphsage.aggregators import RandomAggregator
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # seed
-RANDOM_SEED = 1  # G7
+RANDOM_SEED = 0  # G7
 # embedding dimension
 EMBED_DIM = 128  # G7
 # epsilon
@@ -56,6 +56,12 @@ class SupervisedGraphSage(nn.Module):
     def loss(self, nodes, labels):
         scores = self.forward(nodes)
         return self.xent(scores, labels.squeeze())
+
+
+def init_seeds():
+    np.random.seed(RANDOM_SEED)
+    random.seed(RANDOM_SEED)
+    torch.manual_seed(RANDOM_SEED)
 
 
 def load_cora():
@@ -218,11 +224,6 @@ def chooseAggregator(encoder1, encoder2, features):
     else:
         encoder2.aggregator = MeanAggregator(lambda nodes: encoder1(nodes).t(), cuda=False)
         print("Encoder 2: Mean")
-
-
-def init_seeds():
-    np.random.seed(RANDOM_SEED)
-    random.seed(RANDOM_SEED)
 
 
 def main():
