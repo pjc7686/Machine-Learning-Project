@@ -23,14 +23,16 @@ EMBED_DIM = 128 #G7
 # epsilon
 EPSILON = 0.1 #G7
 # batches
-BATCHES = 500 #G7
+BATCHES = 1000 #G7
+# Epochs
+EPOCHS = 1000
 
 # number of nodes in the cora data
-NUM_NODES_CORA = 2708 #G7
+NUM_NODES_CORA = 2708 # G7
 # number of features in the cora embeddings
-NUM_FEATS_CORA = 1433 #G7
-NUM_SAMPLES_CORA_LAYER1 = 5 #G7
-NUM_SAMPLES_CORA_LAYER2 = 5 #G7
+NUM_FEATS_CORA = 1433 # G7
+NUM_SAMPLES_CORA_LAYER1 = 5 # G7
+NUM_SAMPLES_CORA_LAYER2 = 5 # G7
 
 """
 Simple supervised GraphSAGE model as well as examples running the model
@@ -96,12 +98,49 @@ def run_cora():
     # graphsage.cuda()
     # graphsage.to(device)
 
+    ############# G7
+    # times = []
+
+    # for epoch in range(EPOCHS):
+    #     rand_indices = np.random.permutation(NUM_NODES_CORA)
+    #     test = rand_indices[:1000]
+    #     val = rand_indices[1000:1500]
+    #     train = list(rand_indices[1500:])
+
+
+        # rand_indices = np.random.permutation(NUM_NODES_CORA)
+        # test = rand_indices[:1000]
+        # val = rand_indices[1000:1500]
+        # train = list(rand_indices[1500:])
+
+        # optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, graphsage.parameters()), lr=0.7)
+
+        # times = []
+
+        # for batch in range(BATCHES):
+        #     batch_nodes = train[:256]
+        #     random.shuffle(train)
+        #     start_time = time.time()
+
+        #     # RANDOM AGGREGATOR #G7
+        #     #chooseAggregator(enc1, enc2, features)
+
+        #     optimizer.zero_grad()
+        #     loss = graphsage.loss(batch_nodes, Variable(torch.LongTensor(labels[np.array(batch_nodes)])))
+        #     loss.backward()
+        #     optimizer.step()
+        #     end_time = time.time()
+        #     times.append(end_time - start_time)
+
+        ############# /G7
+
     rand_indices = np.random.permutation(NUM_NODES_CORA)
     test = rand_indices[:1000]
     val = rand_indices[1000:1500]
     train = list(rand_indices[1500:])
 
     optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, graphsage.parameters()), lr=0.7)
+
     times = []
 
     for batch in range(BATCHES):
@@ -109,8 +148,8 @@ def run_cora():
         random.shuffle(train)
         start_time = time.time()
 
-        # RANDOM AGGREGATOR #G7
-        #chooseAggregator(enc1, enc2, features)
+            # RANDOM AGGREGATOR #G7
+            #chooseAggregator(enc1, enc2, features)
 
         optimizer.zero_grad()
         loss = graphsage.loss(batch_nodes, Variable(torch.LongTensor(labels[np.array(batch_nodes)])))
@@ -119,7 +158,7 @@ def run_cora():
         end_time = time.time()
         times.append(end_time - start_time)
 
-    print("Epochs: ", 1)
+    print("Epochs: ", EPOCHS)
     start_output = time.time()
     val_output = graphsage.forward(val)
     end_output = time.time()
@@ -184,6 +223,7 @@ def run_pubmed():
 
     optimizer = torch.optim.SGD(filter(lambda p : p.requires_grad, graphsage.parameters()), lr=0.7)
     times = []
+
     for batch in range(200):
         batch_nodes = train[:1024]
         random.shuffle(train)
