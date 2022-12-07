@@ -22,11 +22,10 @@ RANDOM_SEED = 1 # G7
 EMBED_DIM = 128 # G7
 # epsilon
 EPSILON = 0.1 # G7
-# batches
-BATCHES = 1000 #G7
 # Epochs
-EPOCHS = 1000
-BATCHES = 200 # G7
+EPOCHS = 10
+# Batches
+BATCHES = 100 # G7
 # learning rate
 LRATE = .7  # G7
 
@@ -102,63 +101,63 @@ def run_cora():
     # graphsage.to(device)
 
     ############# G7
-    # times = []
-
-    # for epoch in range(EPOCHS):
-    #     rand_indices = np.random.permutation(NUM_NODES_CORA)
-    #     test = rand_indices[:1000]
-    #     val = rand_indices[1000:1500]
-    #     train = list(rand_indices[1500:])
-
-
-        # rand_indices = np.random.permutation(NUM_NODES_CORA)
-        # test = rand_indices[:1000]
-        # val = rand_indices[1000:1500]
-        # train = list(rand_indices[1500:])
-
-        # optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, graphsage.parameters()), lr=0.7)
-
-        # times = []
-
-        # for batch in range(BATCHES):
-        #     batch_nodes = train[:256]
-        #     random.shuffle(train)
-        #     start_time = time.time()
-
-        #     # RANDOM AGGREGATOR #G7
-        #     #chooseAggregator(enc1, enc2, features)
-
-        #     optimizer.zero_grad()
-        #     loss = graphsage.loss(batch_nodes, Variable(torch.LongTensor(labels[np.array(batch_nodes)])))
-        #     loss.backward()
-        #     optimizer.step()
-        #     end_time = time.time()
-        #     times.append(end_time - start_time)
-
-    ############# /G7
-
-    rand_indices = np.random.permutation(NUM_NODES_CORA)
-    test = rand_indices[:1000]
-    val = rand_indices[1000:1500]
-    train = list(rand_indices[1500:])
-
-    optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, graphsage.parameters()), lr=LRATE)
     times = []
 
-    for batch in range(BATCHES):
-        batch_nodes = train[:256]
-        random.shuffle(train)
-        start_time = time.time()
+    for epoch in range(EPOCHS):
+        rand_indices = np.random.permutation(NUM_NODES_CORA)
+        test = rand_indices[:1000]
+        val = rand_indices[1000:1500]
+        train = list(rand_indices[1500:])
+
+
+        rand_indices = np.random.permutation(NUM_NODES_CORA)
+        test = rand_indices[:1000]
+        val = rand_indices[1000:1500]
+        train = list(rand_indices[1500:])
+
+        optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, graphsage.parameters()), lr=0.7)
+
+        times = []
+
+        for batch in range(BATCHES):
+            batch_nodes = train[:256]
+            random.shuffle(train)
+            start_time = time.time()
 
             # RANDOM AGGREGATOR #G7
             #chooseAggregator(enc1, enc2, features)
 
-        optimizer.zero_grad()
-        loss = graphsage.loss(batch_nodes, Variable(torch.LongTensor(labels[np.array(batch_nodes)])))
-        loss.backward()
-        optimizer.step()
-        end_time = time.time()
-        times.append(end_time - start_time)
+            optimizer.zero_grad()
+            loss = graphsage.loss(batch_nodes, Variable(torch.LongTensor(labels[np.array(batch_nodes)])))
+            loss.backward()
+            optimizer.step()
+            end_time = time.time()
+            times.append(end_time - start_time)
+
+    ############# /G7
+
+    # rand_indices = np.random.permutation(NUM_NODES_CORA)
+    # test = rand_indices[:1000]
+    # val = rand_indices[1000:1500]
+    # train = list(rand_indices[1500:])
+
+    # optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, graphsage.parameters()), lr=LRATE)
+    # times = []
+
+    # for batch in range(BATCHES):
+    #     batch_nodes = train[:256]
+    #     random.shuffle(train)
+    #     start_time = time.time()
+
+    #         # RANDOM AGGREGATOR #G7
+    #         #chooseAggregator(enc1, enc2, features)
+
+    #     optimizer.zero_grad()
+    #     loss = graphsage.loss(batch_nodes, Variable(torch.LongTensor(labels[np.array(batch_nodes)])))
+    #     loss.backward()
+    #     optimizer.step()
+    #     end_time = time.time()
+    #     times.append(end_time - start_time)
 
     print("Epochs: ", EPOCHS)
     start_output = time.time()
