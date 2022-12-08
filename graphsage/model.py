@@ -87,7 +87,8 @@ def load_cora():
 
 def run_cora():
     feat_data, labels, adj_lists = load_cora()
-    features = nn.Embedding(NUM_NODES_CORA, NUM_FEATS_CORA)
+    features = nn.Embedding(NUM_NODES_CORA, NUM_FEATS_CORA)  # embeddings are randomly initialized
+    # weights are initialized as the 0/1 word vectors
     features.weight = nn.Parameter(torch.FloatTensor(feat_data), requires_grad=False)
     # features.cuda()
 
@@ -104,9 +105,8 @@ def run_cora():
     times = []
 
     rand_indices = np.random.permutation(NUM_NODES_CORA)
-    test = rand_indices[:1000]
-    val = rand_indices[1000:1500]
-    train = list(rand_indices[1500:])
+    test = rand_indices[0:1000]
+    train = list(rand_indices[2000:])
 
     optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, graphsage.parameters()), lr=0.7)
 
@@ -128,11 +128,11 @@ def run_cora():
 
     ############# /G7
 
-    print("Epochs: ", EPOCHS)
     start_output = time.time()
-    val_output = graphsage.forward(val)
+    test_output = graphsage.forward(test)
     end_output = time.time()
-    print("Validation F1:", f1_score(labels[val], val_output.data.numpy().argmax(axis=1), average="micro"))
+    print("Epochs: ", EPOCHS)
+    print("Validation F1:", f1_score(labels[test], test_output.data.numpy().argmax(axis=1), average="micro"))
     print("Test Time: ", end_output - start_output)
     print("Average batch time:", np.mean(times))
 
