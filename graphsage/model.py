@@ -153,7 +153,7 @@ def init_seeds():
 
 
 def main():
-    if len(sys.argv) < 1 or len(sys.argv) > 3: # Invalid input
+    if len(sys.argv) <= 1 or len(sys.argv) > 3: # Invalid input
         print("Usage: python -m graphsage.model aggr1 aggr2 OR python -m graphsage.model all")
         exit(1)
     
