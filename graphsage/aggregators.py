@@ -15,8 +15,8 @@ Set of modules for aggregating embeddings of neighbors.
 
 # G7
 class MaxAggregator(nn.Module):
-    """
-    Aggregates a node's embeddings using mean of neighbors' embeddings
+    """ 
+    Aggregates via max-pooling over MLP functions.
     """
     def __init__(self, features, cuda=False, gcn=False):
         """
