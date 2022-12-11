@@ -1,40 +1,48 @@
+# Note: blocks of code marked with the following were added by the members of group 7
+####### G7
+####### /G7
+
+
+import datetime
+import numpy as np
+import sys
+import random
+import time
 import torch
 import torch.nn as nn
-from torch.nn import init
-from torch.autograd import Variable
 
-import numpy as np
-import time
-import random
-from sklearn.metrics import f1_score
+
 from collections import defaultdict
-
 from graphsage.encoders import Encoder
 from graphsage.aggregators import MeanAggregator
 from graphsage.aggregators import MaxAggregator
-from graphsage.aggregators import RandomAggregator
+from sklearn.metrics import f1_score
+from torch.nn import init
+from torch.autograd import Variable
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+######## G7
 # seed
-RANDOM_SEED = 1 # G7
+RANDOM_SEED = 1 
 # embedding dimension
-EMBED_DIM = 128 # G7
+EMBED_DIM = 128 
 # epsilon
-EPSILON = 0.1 # G7
+EPSILON = 0.1 
 # Epochs
 EPOCHS = 10
 # Batches
-BATCHES = 100 # G7
+BATCHES = 100 
 # learning rate
-LRATE = .7  # G7
+LRATE = .7  
 
 # number of nodes in the cora data
-NUM_NODES_CORA = 2708 # G7
+NUM_NODES_CORA = 2708 
 # number of features in the cora embeddings
-NUM_FEATS_CORA = 1433 # G7
-NUM_SAMPLES_CORA_LAYER1 = 5 # G7
-NUM_SAMPLES_CORA_LAYER2 = 5 # G7
+NUM_FEATS_CORA = 1433 
+NUM_SAMPLES_CORA_LAYER1 = 5 
+NUM_SAMPLES_CORA_LAYER2 = 5 
+
+######## /G7
 
 """
 Simple supervised GraphSAGE model as well as examples running the model
@@ -50,10 +58,12 @@ class SupervisedGraphSage(nn.Module):
         self.weight = nn.Parameter(torch.FloatTensor(num_classes, enc.embed_dim))
         init.xavier_uniform_(self.weight)
 
+
     def forward(self, nodes):
         embeds = self.enc(nodes)
         scores = self.weight.mm(embeds)
         return scores.t()
+
 
     def loss(self, nodes, labels):
         scores = self.forward(nodes)
@@ -85,21 +95,18 @@ def load_cora():
     return feat_data, labels, adj_lists
 
 
-def run_cora():
+def run_cora(aggr1, aggr2):
     feat_data, labels, adj_lists = load_cora()
     features = nn.Embedding(NUM_NODES_CORA, NUM_FEATS_CORA)  # embeddings are randomly initialized
     # weights are initialized as the 0/1 word vectors
     features.weight = nn.Parameter(torch.FloatTensor(feat_data), requires_grad=False)
-    # features.cuda()
 
-    agg1 = MeanAggregator(features, cuda=True)  # G7
+    agg1 = MaxAggregator(features, cuda=False) if aggr1 == "max" else MeanAggregator(features, cuda=False) # G7
     enc1 = Encoder(features, NUM_FEATS_CORA, EMBED_DIM, adj_lists, agg1, NUM_SAMPLES_CORA_LAYER1, gcn=True, cuda=False)
-    agg2 = MaxAggregator(lambda nodes: enc1(nodes).t(), cuda=False) # G7
+    agg2 = MaxAggregator(lambda nodes: enc1(nodes).t(), cuda=False) if aggr1 == "max" else MeanAggregator(lambda nodes: enc1(nodes).t(), cuda=False) # G7
     enc2 = Encoder(lambda nodes: enc1(nodes).t(), enc1.embed_dim, EMBED_DIM, adj_lists, agg2, NUM_SAMPLES_CORA_LAYER2, base_model=enc1, gcn=True, cuda=False)
 
     graphsage = SupervisedGraphSage(7, enc2)
-    # graphsage.cuda()
-    # graphsage.to(device)
 
     ############# G7
     times = []
@@ -116,9 +123,6 @@ def run_cora():
             random.shuffle(train)
             start_time = time.time()
 
-            # RANDOM AGGREGATOR #G7
-            #chooseAggregator(enc1, enc2, features)
-
             optimizer.zero_grad()
             loss = graphsage.loss(batch_nodes, Variable(torch.LongTensor(labels[np.array(batch_nodes)])))
             loss.backward()
@@ -128,30 +132,20 @@ def run_cora():
 
     ############# /G7
 
-    start_output = time.time()
     test_output = graphsage.forward(test)
-    end_output = time.time()
+    return (f1_score(labels[test], test_output.data.numpy().argmax(axis=1), average="micro"), np.mean(times))
+
+
+########## G7
+def format_output(f1_scores, average_batch_times):
     print("Epochs: ", EPOCHS)
-    print("Validation F1:", f1_score(labels[test], test_output.data.numpy().argmax(axis=1), average="micro"))
-    print("Test Time: ", end_output - start_output)
-    print("Average batch time:", np.mean(times))
-
-# G7
-def chooseAggregator(encoder1, encoder2, features):
-    if random.random() < EPSILON:
-        encoder1.aggregator = MaxAggregator(features, cuda=False)
-        print("Encoder 1: Alt")
-    else:
-        encoder1.aggregator = MeanAggregator(features, cuda=False)
-        print("Encoder 1: Mean")
-
-    if random.random() < EPSILON:
-        encoder2.aggregator = MaxAggregator(lambda nodes: encoder1(nodes).t(), cuda=False)
-        print("Encoder 2: Alt")
-    else:
-        encoder2.aggregator = MeanAggregator(lambda nodes: encoder1(nodes).t(), cuda=False)
-        print("Encoder 2: Mean")
-
+    print("                                  Aggregator Combinations")
+    print("                         ========================================")
+    print("Layer 1:                 Max     |  Mean   |   Mean  |    Max")
+    print("Layer 2:                 Max     |  Max    |   Mean  |    Mean")
+    print("                         ----------------------------------------")
+    print("F1 Scores:               {0:.3f}   |  {1:.3f}  |  {2:.3f}  |  {3:.3f}".format(f1_scores[0], f1_scores[1], f1_scores[2], f1_scores[3]))  
+    print("Average Batch Times:     {0:.3f}   |  {1:.3f}  |  {2:.3f}  |  {3:.3f}".format(average_batch_times[0], average_batch_times[1], average_batch_times[2], average_batch_times[3]))
 
 def init_seeds():
     np.random.seed(RANDOM_SEED)
@@ -159,9 +153,42 @@ def init_seeds():
 
 
 def main():
+    if len(sys.argv) < 1 or len(sys.argv) > 3: # Invalid input
+        print("Usage: python -m graphsage.model aggr1 aggr2 OR python -m graphsage.model all")
+        exit(1)
+    
     init_seeds()
-    run_cora()
+    if len(sys.argv) == 2: # Run every aggregator combination
+        f1_scores = []
+        average_batch_times = []
 
+        run1 = run_cora("max", "max")
+        run2 = run_cora("mean", "max")
+        run3 = run_cora("mean", "mean")
+        run4 = run_cora("max", "mean")
+
+        f1_scores.append(run1[0])
+        average_batch_times.append(run1[1])
+
+        f1_scores.append(run2[0])
+        average_batch_times.append(run2[1])
+
+        f1_scores.append(run3[0])
+        average_batch_times.append(run3[1])
+
+        f1_scores.append(run4[0])
+        average_batch_times.append(run4[1])
+
+        format_output(f1_scores, average_batch_times)
+    else: # Run a specific aggregator combination
+        (f1_score, average_batch_time) = run_cora(sys.argv[1], sys.argv[2])
+        print("Epochs: ", EPOCHS)
+        print("Validation F1:", f1_score)
+        print("Average batch time:", average_batch_time)
+
+    exit(0)
 
 if __name__ == "__main__":
     main()
+
+######## /G7
