@@ -23,4 +23,4 @@ All code that is not relevant to our project implementation has been scrapped fr
 From 'Machine-Learning-Project', run one of the following:
 - To test one aggregator combination, enter `python -m graphsage.model aggr1 aggr2` where aggr1 and aggr2 can be either `mean` or `max`.
 - To test every aggregator combination, enter `python -m graphsage.model all`, this will print a table with the F1-Score for every combination in this experiment.
-Bash scripts to run each combination are provided for reference and convenience. 
+- Bash scripts to run each combination are provided for reference and convenience. 
