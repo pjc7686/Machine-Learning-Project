@@ -3,7 +3,6 @@
 ####### /G7
 
 
-import datetime
 import numpy as np
 import sys
 import random
@@ -23,7 +22,7 @@ from torch.autograd import Variable
 
 ######## G7
 # seed
-RANDOM_SEED = 1 
+RANDOM_SEED = 1
 # embedding dimension
 EMBED_DIM = 128 
 # epsilon
@@ -33,14 +32,15 @@ EPOCHS = 10
 # Batches
 BATCHES = 100 
 # learning rate
-LRATE = .7  
-
+LRATE = .7
+# the number of random samples layer 2
+NUM_SAMPLES_CORA_LAYER1 = 5
+# the number of random samples layer 2
+NUM_SAMPLES_CORA_LAYER2 = 5
 # number of nodes in the cora data
 NUM_NODES_CORA = 2708 
 # number of features in the cora embeddings
-NUM_FEATS_CORA = 1433 
-NUM_SAMPLES_CORA_LAYER1 = 5 
-NUM_SAMPLES_CORA_LAYER2 = 5 
+NUM_FEATS_CORA = 1433
 
 ######## /G7
 
@@ -97,13 +97,12 @@ def load_cora():
 
 def run_cora(aggr1, aggr2):
     feat_data, labels, adj_lists = load_cora()
-    features = nn.Embedding(NUM_NODES_CORA, NUM_FEATS_CORA)  # embeddings are randomly initialized
-    # weights are initialized as the 0/1 word vectors
+    features = nn.Embedding(NUM_NODES_CORA, NUM_FEATS_CORA)
     features.weight = nn.Parameter(torch.FloatTensor(feat_data), requires_grad=False)
 
     agg1 = MaxAggregator(features, cuda=False) if aggr1 == "max" else MeanAggregator(features, cuda=False) # G7
     enc1 = Encoder(features, NUM_FEATS_CORA, EMBED_DIM, adj_lists, agg1, NUM_SAMPLES_CORA_LAYER1, gcn=True, cuda=False)
-    agg2 = MaxAggregator(lambda nodes: enc1(nodes).t(), cuda=False) if aggr1 == "max" else MeanAggregator(lambda nodes: enc1(nodes).t(), cuda=False) # G7
+    agg2 = MaxAggregator(lambda nodes: enc1(nodes).t(), cuda=False) if aggr2 == "max" else MeanAggregator(lambda nodes: enc1(nodes).t(), cuda=False) # G7
     enc2 = Encoder(lambda nodes: enc1(nodes).t(), enc1.embed_dim, EMBED_DIM, adj_lists, agg2, NUM_SAMPLES_CORA_LAYER2, base_model=enc1, gcn=True, cuda=False)
 
     graphsage = SupervisedGraphSage(7, enc2)
@@ -127,6 +126,7 @@ def run_cora(aggr1, aggr2):
             loss = graphsage.loss(batch_nodes, Variable(torch.LongTensor(labels[np.array(batch_nodes)])))
             loss.backward()
             optimizer.step()
+
             end_time = time.time()
             times.append(end_time - start_time)
 
@@ -150,6 +150,8 @@ def format_output(f1_scores, average_batch_times):
 def init_seeds():
     np.random.seed(RANDOM_SEED)
     random.seed(RANDOM_SEED)
+    torch.manual_seed(RANDOM_SEED)
+
 
 
 def main():
@@ -183,7 +185,7 @@ def main():
     else: # Run a specific aggregator combination
         (f1_score, average_batch_time) = run_cora(sys.argv[1], sys.argv[2])
         print("Epochs: ", EPOCHS)
-        print("Validation F1:", f1_score)
+        print("F1 Score:", f1_score)
         print("Average batch time:", average_batch_time)
 
     exit(0)

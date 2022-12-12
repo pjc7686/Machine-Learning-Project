@@ -64,59 +64,6 @@ class MaxAggregator(nn.Module):
         return to_feats
 
 
-# G7
-class RandomAggregator(nn.Module):
-    """
-    Aggregates a node's embeddings using mean of neighbors' embeddings
-    """
-    def __init__(self, features, cuda=False, gcn=False):
-        """
-        Initializes the aggregator for a specific graph.
-
-        features -- function mapping LongTensor of node ids to FloatTensor of feature values.
-        cuda -- whether to use GPU
-        gcn --- whether to perform concatenation GraphSAGE-style, or add self-loops GCN-style
-        """
-
-        super(RandomAggregator, self).__init__()
-        self.features = features
-        self.cuda = cuda
-        self.gcn = gcn
-
-    def forward(self, nodes, to_neighs, num_sample=10):
-        """
-        nodes --- list of nodes in a batch
-        to_neighs --- list of sets, each set is the set of neighbors for node in batch
-        num_sample --- number of neighbors to sample. No sampling if None.
-        """
-        # Local pointers to functions (speed hack)
-        _set = set
-        if num_sample is not None:
-            _sample = random.sample
-            samp_neighs = [_set(_sample(to_neigh, num_sample,)) if len(to_neigh) >= num_sample else to_neigh for to_neigh in to_neighs]
-        else:
-            samp_neighs = to_neighs
-
-        if self.gcn:
-            samp_neighs = [samp_neigh + {[nodes[i]]} for i, samp_neigh in enumerate(samp_neighs)]
-
-        unique_nodes_list = list(set.union(*samp_neighs)) # returns all distinct nodes from sampled neighbors
-        unique_nodes = {n: i for i, n in enumerate(unique_nodes_list)} # turn this list into a dictionary
-        mask = Variable(torch.zeros(len(samp_neighs), len(unique_nodes))) # create a tensor mask of 0s and 1s
-        column_indices = [unique_nodes[n] for samp_neigh in samp_neighs for n in samp_neigh]
-        row_indices = [i for i in range(len(samp_neighs)) for _ in range(len(samp_neighs[i]))]
-        mask[row_indices, column_indices] = 1 #creates adj list of sorts?
-        num_neigh = mask.sum(1, keepdim=True)
-
-        for i, samp in enumerate(samp_neighs):
-            samp = list(samp)
-            samp_neighs[i] = samp[random.randrange(len(samp))]
-        embed_matrix = self.features(torch.LongTensor(samp_neighs))
-
-        to_feats = embed_matrix # we need to_feats to be 635 (for each input node) by 1433 (for each feature)
-        return to_feats
-
-
 class MeanAggregator(nn.Module):
     """
     Aggregates a node's embeddings using mean of neighbors' embeddings
