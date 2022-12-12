@@ -1,4 +1,4 @@
-# Group 7 Project: Using Multiple Aggregator Function with GraphSAGE
+# Group 7 Project: Using Multiple Aggregation Functions with GraphSAGE
 ## Authors: Ben Jordan, Peter Carbone, Robert Boris
 ## Original Author: William Leif
 
