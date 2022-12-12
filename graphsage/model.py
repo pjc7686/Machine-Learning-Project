@@ -153,7 +153,6 @@ def init_seeds():
     torch.manual_seed(RANDOM_SEED)
 
 
-
 def main():
     if len(sys.argv) <= 1 or len(sys.argv) > 3: # Invalid input
         print("Usage: python -m graphsage.model aggr1 aggr2 OR python -m graphsage.model all")
@@ -184,9 +183,11 @@ def main():
         format_output(f1_scores, average_batch_times)
     else: # Run a specific aggregator combination
         (f1_score, average_batch_time) = run_cora(sys.argv[1], sys.argv[2])
+        print("Layer 1: ", sys.argv[1]) 
+        print("Layer 2: ", sys.argv[2])
         print("Epochs: ", EPOCHS)
         print("F1 Score:", f1_score)
-        print("Average batch time:", average_batch_time)
+        print("Average batch time:", s)
 
     exit(0)
 

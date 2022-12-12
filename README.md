@@ -1,19 +1,33 @@
-# Reference PyTorch GraphSAGE Implementation
-### Author: William L. Hamilton
+# Group 7 Project: Using Multiple Aggregator Function with GraphSAGE
+## Authors: Ben Jordan, Peter Carbone, Robert Boris
+## Original Author: William Leif
 
 
-Basic reference PyTorch implementation of [GraphSAGE](https://github.com/williamleif/GraphSAGE).
-This reference implementation is not as fast as the TensorFlow version for large graphs, but the code is easier to read and it performs better (in terms of speed) on small-graph benchmarks.
-The code is also intended to be simpler, more extensible, and easier to work with than the TensorFlow version.
+Basic reference TensorFlow implementation of [GraphSAGE]
+(https://github.com/williamleif/GraphSAGE).
+Original PyTorch implementation of [GraphSAGE]
+(https://github.com/williamleif/graphsage-simple/).
 
-Currently, only supervised versions of GraphSAGE-mean and GraphSAGE-GCN are implemented. 
 
-#### Requirements
+This code was forked from the PyTorch implementation of GraphSAGE and has been modified to accomodate our experiment. The original PyTorch 
+implementation contained an unsupervised variant of the code that used a different dataset, however only the supervised variant remains in
+our version. All code that is not relevant to our project implementation has been scrapped from the original.
 
-pytorch >0.2 is required.
 
-#### Running examples
+### Requirements
 
-Execute `python -m graphsage.model` to run the Cora example.
-It assumes that CUDA is not being used, but modifying the run functions in `model.py` in the obvious way can change this.
-There is also a pubmed example (called via the `run_pubmed` function in model.py).
+python >= 3.10.8 is required to run.
+
+run `pip -r requirements.txt` to install all required dependencies.
+
+### Running examples
+
+
+From 'Machine-Learning-Project', run one of the following:
+
+To test one aggregator combination, enter `python -m graphsage.model aggr1 aggr2` where aggr1 and aggr2 can be either `mean` or `max`.
+
+To test every aggregator combination, enter `python -m graphsage.model all`, this will print a table with the F1-Score for every combination 
+in this experiment.
+
+Bash scripts to run each combination are provided for reference and convenience. 

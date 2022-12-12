@@ -1,0 +1,1 @@
+python -m graphsage.model mean max
