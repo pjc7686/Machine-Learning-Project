@@ -1,8 +1,21 @@
-import torch
-import torch.nn as nn
-from torch.autograd import Variable
+"""
+File: aggregators.py
+
+Description: File containing aggregation functions used for GraphSAGE layers. The two 
+aggregation functions currently implemented are the mean-pooling aggregator and 
+max-pooling aggregator. 
+
+Authors: Ben Jordan, Peter Carbone, Robert Boris
+Original Author: William Leif
+"""
+
 
 import random
+import torch
+import torch.nn as nn
+
+
+from torch.autograd import Variable
 # seed
 RANDOM_SEED = 1
 random.seed(RANDOM_SEED)

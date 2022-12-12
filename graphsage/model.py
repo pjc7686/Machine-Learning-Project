@@ -1,7 +1,15 @@
-# Note: blocks of code marked with the following were added by the members of group 7
+"""
+File: model.py
+
+Description: File containing the GraphSAGE model code used with the dataset. 
+
+Authors: Ben Jordan, Robert Boris, Peter Carbone
+Original Author: William Leif
+
+Note: blocks of code marked with the following were added by the members of group 7
 ####### G7
 ####### /G7
-
+"""
 
 import numpy as np
 import sys
@@ -107,7 +115,7 @@ def run_cora(aggr1, aggr2):
 
     graphsage = SupervisedGraphSage(7, enc2)
 
-    ############# G7
+############# G7
     times = []
 
     rand_indices = np.random.permutation(NUM_NODES_CORA)
@@ -130,13 +138,10 @@ def run_cora(aggr1, aggr2):
             end_time = time.time()
             times.append(end_time - start_time)
 
-    ############# /G7
-
     test_output = graphsage.forward(test)
     return (f1_score(labels[test], test_output.data.numpy().argmax(axis=1), average="micro"), np.mean(times))
 
 
-########## G7
 def format_output(f1_scores, average_batch_times):
     print("Epochs: ", EPOCHS)
     print("                                  Aggregator Combinations")

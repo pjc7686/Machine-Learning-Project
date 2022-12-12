@@ -1,10 +1,23 @@
+"""
+File: encoders.py
+
+Description: File containing encoder class used for embeddings.
+
+Authors: Ben Jordan, Peter Carbone, Robert Boris
+Original Author: William Leif
+
+Note: This file remains unchanged from the original PyTorch implementation, 
+save for the warning suppression.
+"""
+
 import torch
 import torch.nn as nn
-from torch.nn import init
 import torch.nn.functional as F
-
 import warnings
-warnings.filterwarnings("ignore", message="nn.init.xavier_uniform is now deprecated")
+
+from torch.nn import init
+
+warnings.filterwarnings("ignore", message="nn.init.xavier_uniform is now deprecated") # G7
 
 
 class Encoder(nn.Module):
