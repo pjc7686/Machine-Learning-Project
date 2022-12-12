@@ -9,7 +9,9 @@
 (https://github.com/williamleif/graphsage-simple/).
 
 
-This code was forked from the PyTorch implementation of GraphSAGE and has been modified to accomodate our experiment. The original PyTorch implementation contained an unsupervised variant of the code that used a different dataset, however only the supervised variant remains in our version. All code that is not relevant to our project implementation has been scrapped from the original.
+This code was forked from the PyTorch implementation of GraphSAGE and has been modified to accomodate our experiment. 
+The original PyTorch implementation contained an unsupervised variant of the code that used a different dataset, however only the supervised variant remains in our version. 
+All code that is not relevant to our project implementation has been scrapped from the original.
 
 
 ## Requirements
