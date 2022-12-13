@@ -192,7 +192,7 @@ def main():
         print("Layer 2: ", sys.argv[2])
         print("Epochs: ", EPOCHS)
         print("F1 Score:", f1_score)
-        print("Average batch time:", s)
+        print("Average batch time:", average_batch_time)
 
     exit(0)
 
